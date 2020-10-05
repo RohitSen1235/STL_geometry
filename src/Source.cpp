@@ -4,10 +4,9 @@
 #define F *(float*)
 Data::~Data()
 {
-	delete[] _header;
-	delete[] T;
+
 }
-Data::Data(std::string &filename)
+Data::Data(std::string filename)
 {
 	std::fstream f;
 	f.open(filename, std::ios::in | std::ios::out | std::ios::binary);
@@ -35,24 +34,20 @@ Data::Data(std::string &filename)
 
 		curser->sgetn(memory, size);
 
-		//Test to see if the file is binary
-		/**/
-		//_header = new uint8_t[80];
 		char* memptr = memory;
-		/*for (unsigned i = 0; i < 80; i++)
-		{
-			memptr += i;
-			_header[i] = *(uint8_t*)memptr;
-		}*/
-
+		
 		memptr += 80;
+
 		_n_of_triangles =*(uint32_t*)(memptr);
-		//std::cout << "Number of Triangles : " << _n_of_triangles;
+
+		std::cout << "Number of Triangles : " << _n_of_triangles<<std::endl;
+
 		T = new Triangle[_n_of_triangles];
 		
 	}
 }
-int Data::read_stl(std::string &filename)
+
+int Data::read_stl(std::string filename)
 {
 	std::fstream f;
 	f.open(filename, std::ios::in | std::ios::out | std::ios::binary);
@@ -83,6 +78,7 @@ int Data::read_stl(std::string &filename)
 		/**/
 
 		char* memptr = memory;
+
 		memptr += 84;
 
 		while (memptr < memory + size)
@@ -102,20 +98,20 @@ int Data::read_stl(std::string &filename)
 	}
 	return 0;
 }
-void Data::display_details(std::string &filename)
+void Data::display_details()
 {
 
-	std::cout << "Number of Triangles : " << _n_of_triangles;
-	std::cout << "size of File : " << _size;
+	std::cout << "Number of Triangles : " << _n_of_triangles << std::endl;
+	std::cout << "size of File : " << _size << std::endl;
 
 }
 
 int main()
 {
-	std::string filename = "sample.stl";
+	std::string filename = "../sample_stl/sample.stl";
 
 	Data file(filename);
 	file.read_stl(filename);
-	file.display_details(filename);
+	file.display_details();
 	return 0;
 }

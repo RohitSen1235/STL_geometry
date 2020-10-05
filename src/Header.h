@@ -20,9 +20,9 @@ class Data
 	uint16_t _byte_count;
 	Triangle* T;
 public:
-	Data(std::string &filename);
+	Data(std::string );
 	~Data();
-	int read_stl(std::string &);
-	void display_details(std::string&);
+	int read_stl(std::string );
+	void display_details();
 	
 };
