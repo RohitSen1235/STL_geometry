@@ -1,4 +1,5 @@
 #include<fstream>
+#include<string.h>
 #include "Header.h"
 
 #define F *(float*)
@@ -21,27 +22,53 @@ Data::Data(std::string filename)
 		auto size = curser->pubseekoff(0, f.end);
 
 		_size = size;
-		// sets the curser to bigining of the file
 
+		char* fw=new char[(size_t)(6)];
+		
+		// sets the curser to bigining of the file
+		
 		curser->pubseekpos(0);
+
+		std::streampos pos=6;
+
+		curser->sgetn(fw,pos);
+		//std::cout<<fw<<std::endl;
+		char solid[]="solid\0";
+		int a=strncmp(fw,solid,5);
+		//std::cout<<a<<std::endl;
+		if(a>=0)
+		{
+			_isBinary=false;
+			std::cout<<"File not Binary!! "<<std::endl;
+			_size=0;
+			_n_of_triangles=0;
+			exit(0);
+		}
 
 		// allocate memory to contain file data
 
-		char* memory = new char[(size_t)size];
+		else
+		{
+			_isBinary=true;
 
-		curser->sgetn(memory, size);
+			char* memory = new char[(size_t)size];
 
-		char* memptr = memory;
+			curser->sgetn(memory, size);
+
+			char* memptr = memory;
+
+			memptr += 80;
+
+			_n_of_triangles =*(uint32_t*)(memptr);
+
+			std::cout << "$Constructor Invoked Successfully " << std::endl;
+
+			delete[] memory;
+		}
 		
-		memptr += 80;
-
-		_n_of_triangles =*(uint32_t*)(memptr);
-
-		std::cout << "$Constructor Invoked Successfully " << std::endl;
-
-		//T = new Triangle[_n_of_triangles];
 		f.close();
-		delete[] memory;
+		
+		delete[] fw;
 	}
 }
 
@@ -56,14 +83,14 @@ int Data::get_triangles(std::string filename)
 		std::cout << "File not found!!" << std::endl;
 		ret=-1;
 	}
-	else
+	else if(_isBinary)
 	{
 		std::filebuf* curser = f1.rdbuf();   // Dont know what the hell this is 
 		
 		// pointer to the buffer menory
 
 		auto size = curser->pubseekoff(0, f1.end); 
-		
+
 		// sets the curser to bigining of the file
 
 		curser->pubseekpos(0);
@@ -81,19 +108,19 @@ int Data::get_triangles(std::string filename)
 
 		memptr += 84;
 
-		T = new Triangle[_n_of_triangles];
+		_T = new Triangle[_n_of_triangles];
 		int k=0;
 		while (memptr < buffer+size)
 		{
-			T[k].Normal.x = F(memptr);
-			T[k].Normal.y = F(memptr + 4);
-			T[k].Normal.z = F(memptr + 8);
+			_T[k].Normal.x = F(memptr);
+			_T[k].Normal.y = F(memptr + 4);
+			_T[k].Normal.z = F(memptr + 8);
 			memptr += 12;
 			for (unsigned i = 0; i < 3; i++)
 			{
-				T[k].vertex[i].x = F(memptr);
-				T[k].vertex[i].y = F(memptr + 4);
-				T[k].vertex[i].z = F(memptr + 8);
+				_T[k].vertex[i].x = F(memptr);
+				_T[k].vertex[i].y = F(memptr + 4);
+				_T[k].vertex[i].z = F(memptr + 8);
 				memptr += 12;
 			}
 			k++;
@@ -102,9 +129,19 @@ int Data::get_triangles(std::string filename)
 		delete[] buffer;
 		ret=1;
 	}
+	else
+	{
+		ret=-2;
+	}
+	
+	if (ret>0)
+	{
+		std::cout<<"get_triangles : successfully executed return code : "<<ret<<std::endl;
+	}
 	
 	return ret;
 }
+
 void Data::display_details()
 {
 
@@ -116,14 +153,12 @@ void Data::display_details()
 int main()
 {
 	int r;
+	//std::string filename = "../sample_stl/icosahedron.stl";
 	std::string filename = "../sample_stl/sample2.stl";
 
 	Data file(filename);
 	r=file.get_triangles(filename);
-	if (r>0)
-	{
-		std::cout<<"get_triangles successfully executed return code : "<<r<<std::endl;
-	}
+	
 	file.display_details();
 	return 0;
-}
+} 
