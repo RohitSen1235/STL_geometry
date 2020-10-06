@@ -2,10 +2,7 @@
 #include "Header.h"
 
 #define F *(float*)
-Data::~Data()
-{
 
-}
 Data::Data(std::string filename)
 {
 	std::fstream f;
@@ -40,29 +37,32 @@ Data::Data(std::string filename)
 
 		_n_of_triangles =*(uint32_t*)(memptr);
 
-		std::cout << "Number of Triangles : " << _n_of_triangles<<std::endl;
+		std::cout << "$Constructor Invoked Successfully " << std::endl;
 
-		T = new Triangle[_n_of_triangles];
-		
+		//T = new Triangle[_n_of_triangles];
+		f.close();
+		delete[] memory;
 	}
 }
 
-int Data::read_stl(std::string filename)
+int Data::get_triangles(std::string filename)
 {
-	std::fstream f;
-	f.open(filename, std::ios::in | std::ios::out | std::ios::binary);
+	int ret;
+	std::fstream f1;
+	f1.open(filename, std::ios::in | std::ios::out | std::ios::binary);
 
-	if (!f)
+	if (!f1)
 	{
 		std::cout << "File not found!!" << std::endl;
+		ret=-1;
 	}
 	else
 	{
-		std::filebuf* curser = f.rdbuf();   // Dont know what the hell this is 
+		std::filebuf* curser = f1.rdbuf();   // Dont know what the hell this is 
 		
 		// pointer to the buffer menory
 
-		auto size = curser->pubseekoff(0, f.end); 
+		auto size = curser->pubseekoff(0, f1.end); 
 		
 		// sets the curser to bigining of the file
 
@@ -70,33 +70,40 @@ int Data::read_stl(std::string filename)
 
 		// allocate memory to contain file data
 
-		char* memory = new char[(size_t)size];
+		char* buffer = new char[(size_t)size];
 
-		curser->sgetn(memory, size);
+		curser->sgetn(buffer, size);
 
 		//Test to see if the file is binary
 		/**/
 
-		char* memptr = memory;
+		char* memptr = buffer;
 
 		memptr += 84;
 
-		while (memptr < memory + size)
+		T = new Triangle[_n_of_triangles];
+		int k=0;
+		while (memptr < buffer+size)
 		{
-			T->Normal.x = F(memptr);
-			T->Normal.y = F(memptr + 4);
-			T->Normal.z = F(memptr + 8);
+			T[k].Normal.x = F(memptr);
+			T[k].Normal.y = F(memptr + 4);
+			T[k].Normal.z = F(memptr + 8);
 			memptr += 12;
 			for (unsigned i = 0; i < 3; i++)
 			{
-				T->vertex[i].x = F(memptr);
-				T->vertex[i].y = F(memptr + 4);
-				T->vertex[i].z = F(memptr + 8);
+				T[k].vertex[i].x = F(memptr);
+				T[k].vertex[i].y = F(memptr + 4);
+				T[k].vertex[i].z = F(memptr + 8);
 				memptr += 12;
 			}
+			k++;
 		}
+		f1.close();
+		delete[] buffer;
+		ret=1;
 	}
-	return 0;
+	
+	return ret;
 }
 void Data::display_details()
 {
@@ -108,10 +115,15 @@ void Data::display_details()
 
 int main()
 {
-	std::string filename = "../sample_stl/sample.stl";
+	int r;
+	std::string filename = "../sample_stl/sample2.stl";
 
 	Data file(filename);
-	file.read_stl(filename);
+	r=file.get_triangles(filename);
+	if (r>0)
+	{
+		std::cout<<"get_triangles successfully executed return code : "<<r<<std::endl;
+	}
 	file.display_details();
 	return 0;
 }

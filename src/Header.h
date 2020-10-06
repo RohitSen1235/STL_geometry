@@ -21,8 +21,10 @@ class Data
 	Triangle* T;
 public:
 	Data(std::string );
-	~Data();
-	int read_stl(std::string );
+	~Data(){};
+	int get_triangles(std::string );
 	void display_details();
 	
 };
+
+//bool isBinary(std::string );
