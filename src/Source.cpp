@@ -28,36 +28,36 @@ Data::Data(std::string filename)
 		// sets the curser to bigining of the file
 		
 		curser->pubseekpos(0);
+		
+		// Checking if file is binary or not 
 
 		std::streampos pos=6;
-
 		curser->sgetn(fw,pos);
-		//std::cout<<fw<<std::endl;
+		//std::cout<<fw<<std::endl;		curser->pubseekpos(0);
+
 		char solid[]="solid\0";
 		int a=strncmp(fw,solid,5);
 		//std::cout<<a<<std::endl;
 		if(a>=0)
 		{
 			_isBinary=false;
-			std::cout<<"File not Binary!! "<<std::endl;
+			std::cout<<"File NOT Binary!! "<<std::endl;
 			_size=0;
 			_n_of_triangles=0;
 			exit(0);
 		}
-
-		// allocate memory to contain file data
-
 		else
 		{
+			curser->pubseekpos(0);
 			_isBinary=true;
-
+			// allocate memory to contain file data
 			char* memory = new char[(size_t)size];
 
 			curser->sgetn(memory, size);
 
 			char* memptr = memory;
 
-			memptr += 80;
+			memptr += 80; // skipped first 80 bytes - header 
 
 			_n_of_triangles =*(uint32_t*)(memptr);
 
@@ -101,12 +101,9 @@ int Data::get_triangles(std::string filename)
 
 		curser->sgetn(buffer, size);
 
-		//Test to see if the file is binary
-		/**/
-
 		char* memptr = buffer;
 
-		memptr += 84;
+		memptr += 84;	//skipped first 84 bytes
 
 		_T = new Triangle[_n_of_triangles];
 		int k=0;
@@ -123,8 +120,12 @@ int Data::get_triangles(std::string filename)
 				_T[k].vertex[i].z = F(memptr + 8);
 				memptr += 12;
 			}
+			memptr+=2;// skipping Atribubte byte count
 			k++;
 		}
+		
+		std::cout<<"Processed "<<k<<" Triangles"<<std::endl;
+
 		f1.close();
 		delete[] buffer;
 		ret=1;
