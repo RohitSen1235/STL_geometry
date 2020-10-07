@@ -15,25 +15,25 @@ Data::Data(std::string filename)
 	}
 	else
 	{
-		std::filebuf* curser = f.rdbuf();   // Dont know what the hell this is 
+		std::filebuf* cursor = f.rdbuf();   		
 
 		// pointer to the buffer menory
 
-		auto size = curser->pubseekoff(0, f.end);
+		auto size = cursor->pubseekoff(0, f.end);
 
 		_size = size;
 
 		char* fw=new char[(size_t)(6)];
 		
-		// sets the curser to bigining of the file
+		// sets the cursor to bigining of the file
 		
-		curser->pubseekpos(0);
+		cursor->pubseekpos(0);
 		
 		// Checking if file is binary or not 
 
 		std::streampos pos=6;
-		curser->sgetn(fw,pos);
-		//std::cout<<fw<<std::endl;		curser->pubseekpos(0);
+		cursor->sgetn(fw,pos);
+		//std::cout<<fw<<std::endl;		cursor->pubseekpos(0);
 
 		char solid[]="solid\0";
 		int a=strncmp(fw,solid,5);
@@ -48,12 +48,12 @@ Data::Data(std::string filename)
 		}
 		else
 		{
-			curser->pubseekpos(0);
+			cursor->pubseekpos(0);
 			_isBinary=true;
 			// allocate memory to contain file data
 			char* memory = new char[(size_t)size];
 
-			curser->sgetn(memory, size);
+			cursor->sgetn(memory, size);
 
 			char* memptr = memory;
 
@@ -85,21 +85,21 @@ int Data::get_triangles(std::string filename)
 	}
 	else if(_isBinary)
 	{
-		std::filebuf* curser = f1.rdbuf();   // Dont know what the hell this is 
+		std::filebuf* cursor = f1.rdbuf();   
 		
 		// pointer to the buffer menory
 
-		auto size = curser->pubseekoff(0, f1.end); 
+		auto size = cursor->pubseekoff(0, f1.end); 
 
-		// sets the curser to bigining of the file
+		// sets the cursor to bigining of the file
 
-		curser->pubseekpos(0);
+		cursor->pubseekpos(0);
 
 		// allocate memory to contain file data
 
 		char* buffer = new char[(size_t)size];
 
-		curser->sgetn(buffer, size);
+		cursor->sgetn(buffer, size);
 
 		char* memptr = buffer;
 
