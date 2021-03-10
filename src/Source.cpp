@@ -1,5 +1,6 @@
 #include<fstream>
 #include<string.h>
+#include<math.h>
 #include "Header.h"
 
 #define F *(float*)
@@ -12,6 +13,9 @@ Data::Data(std::string filename)
 	if (!f)
 	{
 		std::cout << "File not found!!" << std::endl;
+		_size=0;
+		_n_of_triangles=0;
+		_isBinary=false;
 	}
 	else
 	{
@@ -61,7 +65,7 @@ Data::Data(std::string filename)
 
 			_n_of_triangles =*(uint32_t*)(memptr);
 
-			std::cout << "$Constructor Invoked Successfully " << std::endl;
+			//std::cout << "$Constructor Invoked Successfully " << std::endl;
 
 			delete[] memory;
 		}
@@ -80,7 +84,7 @@ int Data::get_triangles(std::string filename)
 
 	if (!f1)
 	{
-		std::cout << "File not found!!" << std::endl;
+		//std::cout << "File not found!!" << std::endl;
 		ret=-1;
 	}
 	else if(_isBinary)
@@ -124,7 +128,7 @@ int Data::get_triangles(std::string filename)
 			k++;
 		}
 		
-		std::cout<<"Processed "<<k<<" Triangles"<<std::endl;
+		//std::cout<<"Processed "<<k<<" Triangles"<<std::endl;
 
 		f1.close();
 		delete[] buffer;
@@ -137,25 +141,82 @@ int Data::get_triangles(std::string filename)
 	
 	if (ret>0)
 	{
-		std::cout<<"get_triangles : successfully executed return code : "<<ret<<std::endl;
+		std::cout<<"get_triangles : successfully executed,return code : "<<ret<<std::endl;
 	}
 	
 	return ret;
 }
 
+double Data::_signedVolofTriangle(Triangle & T)
+{
+	double v321 = T.vertex[2].x * T.vertex[1].y * T.vertex[0].z;
+    double v231 = T.vertex[1].x * T.vertex[2].y * T.vertex[0].z;
+    double v312 = T.vertex[2].x * T.vertex[0].y * T.vertex[1].z;
+    double v132 = T.vertex[0].x * T.vertex[2].y * T.vertex[1].z;
+    double v213 = T.vertex[1].x * T.vertex[0].y * T.vertex[2].z;
+    double v123 = T.vertex[0].x * T.vertex[1].y * T.vertex[2].z;
+
+    return (1.0f/6.0f)*(-v321 + v231 + v312 - v132 - v213 + v123);
+}
+
+double Data::_areaofTriangle(Triangle & T)
+{
+    double ax = T.vertex[1].x - T.vertex[0].x;
+    double ay = T.vertex[1].y - T.vertex[0].y;
+    double az = T.vertex[1].z - T.vertex[0].z;
+    double bx = T.vertex[2].x - T.vertex[0].x;
+    double by = T.vertex[2].y - T.vertex[0].y;
+    double bz = T.vertex[2].z - T.vertex[0].z;
+    double cx = ay*bz - az*by;
+    double cy = az*bx - ax*bz;
+    double cz = ax*by - ay*bx;
+
+    return 0.5 * sqrt(cx*cx + cy*cy + cz*cz); 
+}
+
+double Data::get_Volume()
+{
+	double volume=0.0;
+
+	for(int i=0;i<_n_of_triangles;++i)
+	{
+		volume+=_signedVolofTriangle(_T[i]);
+	} 
+
+	return volume;
+}
+
+double Data::get_SurfaceArea()
+{
+	double SurfaceArea=0.0;
+	for(int i=0;i<_n_of_triangles;++i)
+	{
+		SurfaceArea+=_areaofTriangle(_T[i]);
+	}
+	return SurfaceArea;
+}
+
 void Data::display_details()
 {
-
-	std::cout << "Number of Triangles : " << _n_of_triangles << std::endl;
-	std::cout << "size of File : " << _size << std::endl;
+	if(_isBinary)
+	{
+		std::cout << "Number of Triangles : " << _n_of_triangles << std::endl;
+		std::cout << "size of File : " << _size << std::endl;
+		std::cout << "Volume of Mesh : "<< get_Volume() <<std::endl;
+		std::cout << "Surface Area of Mesh : "<< get_SurfaceArea() <<std::endl;
+	}
+	else
+	{
+		std::cout <<"File could not be processed !!"<<std::endl;
+	}
+	
 
 }
 
 int main()
 {
 	int r;
-	//std::string filename = "../sample_stl/icosahedron.stl";
-	std::string filename = "../sample_stl/sample2.stl";
+	std::string filename = "sample_stl/Impeller1.stl";
 
 	Data file(filename);
 	r=file.get_triangles(filename);
