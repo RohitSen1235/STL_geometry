@@ -1,3 +1,4 @@
+#pragma once
 #include<fstream>
 #include<string.h>
 #include<math.h>
@@ -138,12 +139,12 @@ int Data::get_triangles(std::string filename)
 	{
 		ret=-2;
 	}
-	
+	/*
 	if (ret>0)
 	{
 		std::cout<<"get_triangles : successfully executed,return code : "<<ret<<std::endl;
 	}
-	
+	*/
 	return ret;
 }
 
@@ -178,7 +179,7 @@ double Data::get_Volume()
 {
 	double volume=0.0;
 
-	for(int i=0;i<_n_of_triangles;++i)
+	for(unsigned i=0;i<_n_of_triangles;++i)
 	{
 		volume+=_signedVolofTriangle(_T[i]);
 	} 
@@ -189,7 +190,7 @@ double Data::get_Volume()
 double Data::get_SurfaceArea()
 {
 	double SurfaceArea=0.0;
-	for(int i=0;i<_n_of_triangles;++i)
+	for(unsigned i=0;i<_n_of_triangles;++i)
 	{
 		SurfaceArea+=_areaofTriangle(_T[i]);
 	}
@@ -213,14 +214,32 @@ void Data::display_details()
 
 }
 
-int main()
+double stl_surfacearea(std::string filename)
 {
 	int r;
-	std::string filename = "sample_stl/Impeller1.stl";
-
+    double surfacearea;
 	Data file(filename);
 	r=file.get_triangles(filename);
-	
-	file.display_details();
-	return 0;
+    if(r==1)
+    {
+	    surfacearea=file.get_SurfaceArea();
+    }
+    else{surfacearea=-1.0;}
+    
+	return surfacearea;
+} 
+
+double stl_volume(std::string filename)
+{
+	int r;
+    double volume;
+	Data file(filename);
+	r=file.get_triangles(filename);
+    if(r==1)
+    {
+	volume=file.get_Volume();
+    }
+    else{volume=-1;}
+    
+	return volume;
 } 
